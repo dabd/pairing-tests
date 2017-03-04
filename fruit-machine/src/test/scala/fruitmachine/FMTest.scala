@@ -10,14 +10,6 @@ class FMTest extends CommonSpec {
       s <- Gen.oneOf(Black, White, Green, Yellow)
     } yield (s, s, s, s)
 
-  val genNonJackpot: Gen[Slots] =
-    (for {
-      s1 <- Gen.oneOf(Black, White, Green, Yellow)
-      s2 <- Gen.oneOf(Black, White, Green, Yellow)
-      s3 <- Gen.oneOf(Black, White, Green, Yellow)
-      s4 <- Gen.oneOf(Black, White, Green, Yellow)
-    } yield (s1, s2, s3, s4)) suchThat (!isJackpot(_))
-
   val genSlotsDifferentColours: Gen[Slots] =
     (for {
       s1 <- Gen.oneOf(Black, White, Green, Yellow)
@@ -37,7 +29,7 @@ class FMTest extends CommonSpec {
   val genSlotsWithPrize: Gen[Slots] =
     Gen.oneOf(genJackpot, genSlotsDifferentColours, genSlotsAdjacentColours)
 
-  val genSlotsNoPrize: Gen[Slots] =
+  val genSlotsWithoutPrize: Gen[Slots] =
     (for {
       s1 <- Gen.oneOf(Black, White, Green, Yellow)
       s2 <- Gen.oneOf(Black, White, Green, Yellow)
@@ -49,7 +41,7 @@ class FMTest extends CommonSpec {
                                         slots) && !hasAdjacentColours(slots))
 
   val genSlots: Gen[Slots] =
-    Gen.frequency((8, genSlotsNoPrize), (2, genSlotsWithPrize))
+    Gen.frequency((8, genSlotsWithoutPrize), (2, genSlotsWithPrize))
 
   def genFruitMachine(
       slotGen: Gen[Slots],
@@ -178,7 +170,7 @@ class FMTest extends CommonSpec {
     }
 
     "lose the cost of a play if no prize is awarded" in {
-      forAll(genPlay(genSlotsNoPrize)) {
+      forAll(genPlay(genSlotsWithoutPrize)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
           (fm2, p2) shouldBe payOut(0, fm, p)
