@@ -140,7 +140,7 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genJackpot)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          (fm2, p2) shouldBe payOut(fm.prize, fm, p)
+          (fm2, p2) shouldBe payoutPrize(fm.prize, fm, p)
       }
     }
 
@@ -148,7 +148,7 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genSlotsDifferentColours)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          (fm2, p2) shouldBe payOut(fm.prize / 2, fm, p)
+          (fm2, p2) shouldBe payoutPrize(fm.prize / 2, fm, p)
       }
     }
 
@@ -156,9 +156,7 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genSlotsAdjacentColours)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          (fm2, p2) shouldBe payOut(costOfPlay * 5, fm, p)
-          p2.freePlays shouldBe p.freePlays
-
+          (fm2, p2) shouldBe payoutPrize(costOfPlay * 5, fm, p)
       }
     }
 
@@ -167,8 +165,7 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genSlotsAdjacentColours, insufficientPrizeMoney = true)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          (fm2, p2) shouldBe payOut(costOfPlay * 5, fm, p)
-          p2.freePlays shouldBe p.freePlays + p2.prizeWon - fm.prize
+          (fm2, p2) shouldBe payoutFreePlays(costOfPlay * 5, fm, p)
       }
     }
 

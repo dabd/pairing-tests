@@ -43,16 +43,25 @@ object FM {
              fruitMachine: FruitMachine,
              player: Player): (FruitMachine, Player) =
     if (prizeWon > fruitMachine.prize)
-      (FruitMachine(0, fruitMachine.randomSlotGenerator),
-       Player(player.bankroll - costOfPlay + fruitMachine.prize,
-              player.freePlays + prizeWon - fruitMachine.prize,
-              prizeWon))
-    else
-      (FruitMachine(fruitMachine.prize - prizeWon,
-                    fruitMachine.randomSlotGenerator),
-       Player(player.bankroll - costOfPlay + prizeWon,
-              player.freePlays,
-              prizeWon))
+      payoutFreePlays(prizeWon, fruitMachine, player)
+    else payoutPrize(prizeWon, fruitMachine, player)
+
+  def payoutFreePlays(prizeWon: BigDecimal,
+                      fruitMachine: FruitMachine,
+                      player: Player): (FruitMachine, Player) =
+    (FruitMachine(0, fruitMachine.randomSlotGenerator),
+     Player(player.bankroll - costOfPlay + fruitMachine.prize,
+            player.freePlays + prizeWon - fruitMachine.prize,
+            prizeWon))
+
+  def payoutPrize(prizeWon: BigDecimal,
+                  fruitMachine: FruitMachine,
+                  player: Player): (FruitMachine, Player) =
+    (FruitMachine(fruitMachine.prize - prizeWon,
+                  fruitMachine.randomSlotGenerator),
+     Player(player.bankroll - costOfPlay + prizeWon,
+            player.freePlays,
+            prizeWon))
 
   def tuple4ToList[T](t: (T, T, T, T)): List[T] = List(t._1, t._2, t._3, t._4)
 
