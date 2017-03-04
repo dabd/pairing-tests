@@ -9,12 +9,11 @@ object FM {
   case object Green extends Colour
   case object Yellow extends Colour
 
-  type Money = BigDecimal
   type Slots = (Colour, Colour, Colour, Colour)
 
-  case class FruitMachine(prize: Money, randomSlotGenerator: () => Slots)
+  case class FruitMachine(prize: BigDecimal, randomSlotGenerator: () => Slots)
 
-  case class Player(bankroll: Money,
+  case class Player(bankroll: BigDecimal,
                     freePlays: BigDecimal = 0,
                     prizeWon: BigDecimal = 0)
 
@@ -41,7 +40,7 @@ object FM {
     }
   }
 
-  def payOut(prizeWon: Money,
+  def payOut(prizeWon: BigDecimal,
              fruitMachine: FruitMachine,
              player: Player): (FruitMachine, Player) = {
     if (prizeWon > fruitMachine.prize)
