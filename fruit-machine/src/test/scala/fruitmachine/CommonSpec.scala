@@ -7,3 +7,4 @@ class CommonSpec
     extends WordSpec
     with Matchers
     with GeneratorDrivenPropertyChecks
+
