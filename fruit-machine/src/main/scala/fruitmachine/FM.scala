@@ -5,11 +5,8 @@ object FM {
   sealed trait Colour
 
   case object Black extends Colour
-
   case object White extends Colour
-
   case object Green extends Colour
-
   case object Yellow extends Colour
 
   type Slots = (Colour, Colour, Colour, Colour)
