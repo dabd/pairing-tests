@@ -105,7 +105,7 @@ class FMTest extends CommonSpec {
   }
 
   "hasAdjacentColours" should {
-    "return true if the there are 2 or more adjacent coloured slots but not all of them are the same colour" in {
+    "return true if there are 2 or more adjacent coloured slots but not all of them are the same colour" in {
       forAll(genSlots) { slots =>
         val slotList = tuple4ToList(slots)
         hasAdjacentColours(slots) shouldBe
@@ -116,7 +116,7 @@ class FMTest extends CommonSpec {
   }
 
   "isJackpot" should {
-    "return true if all slots are the same colour" in {
+    "return true if all slots are of the same colour" in {
       forAll(genSlots) { slots =>
         isJackpot(slots) shouldBe tuple4ToList(slots)
           .sliding(2)
@@ -152,7 +152,7 @@ class FMTest extends CommonSpec {
       }
     }
 
-    "win 5 times the cost of a single play if the slots display two or more adjacent colours" in {
+    "win 5 times the cost of a single play if the slots display two or more adjacent colours but not a jackpot" in {
       forAll(genPlay(genSlotsAdjacentColours)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
