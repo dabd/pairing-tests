@@ -5,8 +5,11 @@ object FM {
   sealed trait Colour
 
   case object Black extends Colour
+
   case object White extends Colour
+
   case object Green extends Colour
+
   case object Yellow extends Colour
 
   type Slots = (Colour, Colour, Colour, Colour)
@@ -28,7 +31,7 @@ object FM {
     (randomColour, randomColour, randomColour, randomColour)
 
   def play(fruitMachine: FruitMachine,
-           player: Player): (FruitMachine, Player) = {
+           player: Player): (FruitMachine, Player) =
     fruitMachine.randomSlotGenerator() match {
       case slots if isJackpot(slots) =>
         payOut(fruitMachine.prize, fruitMachine, player)
@@ -38,11 +41,10 @@ object FM {
         payOut(5 * costOfPlay, fruitMachine, player)
       case _ => payOut(0, fruitMachine, player)
     }
-  }
 
   def payOut(prizeWon: BigDecimal,
              fruitMachine: FruitMachine,
-             player: Player): (FruitMachine, Player) = {
+             player: Player): (FruitMachine, Player) =
     if (prizeWon > fruitMachine.prize)
       (FruitMachine(0, fruitMachine.randomSlotGenerator),
        Player(player.bankroll - costOfPlay + fruitMachine.prize,
@@ -54,7 +56,6 @@ object FM {
        Player(player.bankroll - costOfPlay + prizeWon,
               player.freePlays,
               prizeWon))
-  }
 
   def tuple4ToList[T](t: (T, T, T, T)): List[T] = List(t._1, t._2, t._3, t._4)
 
