@@ -140,12 +140,7 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genJackpot)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          val prizeWon = fm.prize
-          p2.bankroll shouldBe p.bankroll - costOfPlay + prizeWon
-          p2.freePlays shouldBe p.freePlays
-          p2.prizeWon shouldBe prizeWon
-          fm2.prize shouldBe fm.prize - prizeWon
-          fm2.randomSlotGenerator shouldBe fm.randomSlotGenerator
+          (fm2, p2) shouldBe payOut(fm.prize, fm, p)
       }
     }
 
@@ -153,12 +148,7 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genSlotsDifferentColours)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          val prizeWon = fm.prize / 2
-          p2.bankroll shouldBe p.bankroll - costOfPlay + prizeWon
-          p2.freePlays shouldBe p.freePlays
-          p2.prizeWon shouldBe prizeWon
-          fm2.prize shouldBe fm.prize - prizeWon
-          fm2.randomSlotGenerator shouldBe fm.randomSlotGenerator
+          (fm2, p2) shouldBe payOut(fm.prize / 2, fm, p)
       }
     }
 
@@ -166,12 +156,9 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genSlotsAdjacentColours)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          val prizeWon = costOfPlay * 5
-          p2.bankroll shouldBe p.bankroll - costOfPlay + prizeWon
+          (fm2, p2) shouldBe payOut(costOfPlay * 5, fm, p)
           p2.freePlays shouldBe p.freePlays
-          p2.prizeWon shouldBe prizeWon
-          fm2.prize shouldBe fm.prize - prizeWon
-          fm2.randomSlotGenerator shouldBe fm.randomSlotGenerator
+
       }
     }
 
@@ -180,11 +167,8 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genSlotsAdjacentColours, insufficientPrizeMoney = true)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          p2.bankroll shouldBe p.bankroll - costOfPlay + fm.prize
+          (fm2, p2) shouldBe payOut(costOfPlay * 5, fm, p)
           p2.freePlays shouldBe p.freePlays + p2.prizeWon - fm.prize
-          p2.prizeWon shouldBe costOfPlay * 5
-          fm2.prize shouldBe 0
-          fm2.randomSlotGenerator shouldBe fm.randomSlotGenerator
       }
     }
 
@@ -192,11 +176,7 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genSlotsWithoutPrize)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          p2.bankroll shouldBe p.bankroll - costOfPlay
-          p2.freePlays shouldBe p.freePlays
-          p2.prizeWon shouldBe 0
-          fm2.prize shouldBe fm.prize
-          fm2.randomSlotGenerator shouldBe fm.randomSlotGenerator
+          (fm2, p2) shouldBe payOut(0, fm, p)
       }
     }
   }
