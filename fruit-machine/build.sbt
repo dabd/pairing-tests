@@ -1,4 +1,4 @@
-name := "fpinscala"
+name := "fruit-machine"
 
 scalaVersion := "2.12.1"
 
