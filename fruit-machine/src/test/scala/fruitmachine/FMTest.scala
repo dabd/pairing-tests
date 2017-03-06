@@ -10,35 +10,27 @@ class FMTest extends CommonSpec {
       s <- Gen.oneOf(Black, White, Green, Yellow)
     } yield (s, s, s, s)
 
-  val genSlotsDifferentColours: Gen[Slots] =
+  def genSlotsSuchThat(p: Slots => Boolean): Gen[Slots] =
     (for {
       s1 <- Gen.oneOf(Black, White, Green, Yellow)
       s2 <- Gen.oneOf(Black, White, Green, Yellow)
       s3 <- Gen.oneOf(Black, White, Green, Yellow)
       s4 <- Gen.oneOf(Black, White, Green, Yellow)
-    } yield (s1, s2, s3, s4)) retryUntil (allDifferentColours(_))
+    } yield (s1, s2, s3, s4)) retryUntil p
+
+  val genSlotsDifferentColours: Gen[Slots] =
+    genSlotsSuchThat(allDifferentColours)
 
   val genSlotsAdjacentColours: Gen[Slots] =
-    (for {
-      s1 <- Gen.oneOf(Black, White, Green, Yellow)
-      s2 <- Gen.oneOf(Black, White, Green, Yellow)
-      s3 <- Gen.oneOf(Black, White, Green, Yellow)
-      s4 <- Gen.oneOf(Black, White, Green, Yellow)
-    } yield (s1, s2, s3, s4)) retryUntil (hasAdjacentColours(_))
+    genSlotsSuchThat(hasAdjacentColours)
 
   val genSlotsWithPrize: Gen[Slots] =
     Gen.oneOf(genJackpot, genSlotsDifferentColours, genSlotsAdjacentColours)
 
-  val genSlotsWithoutPrize: Gen[Slots] =
-    (for {
-      s1 <- Gen.oneOf(Black, White, Green, Yellow)
-      s2 <- Gen.oneOf(Black, White, Green, Yellow)
-      s3 <- Gen.oneOf(Black, White, Green, Yellow)
-      s4 <- Gen.oneOf(Black, White, Green, Yellow)
-    } yield
-      (s1, s2, s3, s4)) retryUntil (slots =>
-                                      !isJackpot(slots) && !allDifferentColours(
-                                        slots) && !hasAdjacentColours(slots))
+  val genSlotsWithoutPrize: Gen[Slots] = genSlotsSuchThat(
+    slots =>
+      !isJackpot(slots) && !allDifferentColours(slots) && !hasAdjacentColours(
+        slots))
 
   val genSlots: Gen[Slots] =
     Gen.frequency((8, genSlotsWithoutPrize), (2, genSlotsWithPrize))
@@ -78,7 +70,7 @@ class FMTest extends CommonSpec {
              genPlayer) {
         case (fm, p) =>
           val prizeWon = costOfPlay * 5
-          val (fm2, p2) = payOut(prizeWon, fm, p)
+          val (fm2, p2) = payOut(fm, p.copy(prizeWon = prizeWon))
           p2.bankroll shouldBe p.bankroll - costOfPlay + fm.prize
           p2.freePlays shouldBe p.freePlays + p2.prizeWon - fm.prize
           p2.prizeWon shouldBe prizeWon
@@ -94,7 +86,7 @@ class FMTest extends CommonSpec {
         prizeWon <- Gen.choose(0, fm.prize.toInt)
       } yield (fm, p, prizeWon)) {
         case (fm, p, prizeWon) =>
-          val (fm2, p2) = payOut(prizeWon, fm, p)
+          val (fm2, p2) = payOut(fm, p.copy(prizeWon = prizeWon))
           p2.bankroll shouldBe p.bankroll - costOfPlay + prizeWon
           p2.freePlays shouldBe p.freePlays
           p2.prizeWon shouldBe prizeWon
@@ -140,7 +132,7 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genJackpot)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          (fm2, p2) shouldBe payoutPrize(fm.prize, fm, p)
+          (fm2, p2) shouldBe payoutPrize(fm, p.copy(prizeWon = fm.prize))
       }
     }
 
@@ -148,7 +140,7 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genSlotsDifferentColours)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          (fm2, p2) shouldBe payoutPrize(fm.prize / 2, fm, p)
+          (fm2, p2) shouldBe payoutPrize(fm, p.copy(prizeWon = fm.prize / 2))
       }
     }
 
@@ -156,7 +148,7 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genSlotsAdjacentColours)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          (fm2, p2) shouldBe payoutPrize(costOfPlay * 5, fm, p)
+          (fm2, p2) shouldBe payoutPrize(fm, p.copy(prizeWon = costOfPlay * 5))
       }
     }
 
@@ -165,7 +157,8 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genSlotsAdjacentColours, insufficientPrizeMoney = true)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          (fm2, p2) shouldBe payoutFreePlays(costOfPlay * 5, fm, p)
+          (fm2, p2) shouldBe payoutFreePlays(fm,
+                                             p.copy(prizeWon = costOfPlay * 5))
       }
     }
 
@@ -173,7 +166,7 @@ class FMTest extends CommonSpec {
       forAll(genPlay(genSlotsWithoutPrize)) {
         case (fm, p) =>
           val (fm2, p2) = play(fm, p)
-          (fm2, p2) shouldBe payOut(0, fm, p)
+          (fm2, p2) shouldBe payOut(fm, p.copy(prizeWon = 0))
       }
     }
   }

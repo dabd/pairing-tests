@@ -31,37 +31,34 @@ object FM {
            player: Player): (FruitMachine, Player) =
     fruitMachine.randomSlotGenerator() match {
       case slots if isJackpot(slots) =>
-        payOut(fruitMachine.prize, fruitMachine, player)
+        payOut(fruitMachine, player.copy(prizeWon = fruitMachine.prize))
       case slots if allDifferentColours(slots) =>
-        payOut(fruitMachine.prize / 2, fruitMachine, player)
+        payOut(fruitMachine, player.copy(prizeWon = fruitMachine.prize / 2))
       case slots if hasAdjacentColours(slots) =>
-        payOut(5 * costOfPlay, fruitMachine, player)
-      case _ => payOut(0, fruitMachine, player)
+        payOut(fruitMachine, player.copy(prizeWon = 5 * costOfPlay))
+      case _ => payOut(fruitMachine, player.copy(prizeWon = 0))
     }
 
-  def payOut(prizeWon: BigDecimal,
-             fruitMachine: FruitMachine,
+  def payOut(fruitMachine: FruitMachine,
              player: Player): (FruitMachine, Player) =
-    if (prizeWon > fruitMachine.prize)
-      payoutFreePlays(prizeWon, fruitMachine, player)
-    else payoutPrize(prizeWon, fruitMachine, player)
+    if (player.prizeWon > fruitMachine.prize)
+      payoutFreePlays(fruitMachine, player)
+    else payoutPrize(fruitMachine, player)
 
-  def payoutFreePlays(prizeWon: BigDecimal,
-                      fruitMachine: FruitMachine,
+  def payoutFreePlays(fruitMachine: FruitMachine,
                       player: Player): (FruitMachine, Player) =
     (FruitMachine(0, fruitMachine.randomSlotGenerator),
      Player(player.bankroll - costOfPlay + fruitMachine.prize,
-            player.freePlays + prizeWon - fruitMachine.prize,
-            prizeWon))
+            player.freePlays + player.prizeWon - fruitMachine.prize,
+            player.prizeWon))
 
-  def payoutPrize(prizeWon: BigDecimal,
-                  fruitMachine: FruitMachine,
+  def payoutPrize(fruitMachine: FruitMachine,
                   player: Player): (FruitMachine, Player) =
-    (FruitMachine(fruitMachine.prize - prizeWon,
+    (FruitMachine(fruitMachine.prize - player.prizeWon,
                   fruitMachine.randomSlotGenerator),
-     Player(player.bankroll - costOfPlay + prizeWon,
+     Player(player.bankroll - costOfPlay + player.prizeWon,
             player.freePlays,
-            prizeWon))
+            player.prizeWon))
 
   def tuple4ToList[T](t: (T, T, T, T)): List[T] = List(t._1, t._2, t._3, t._4)
 
