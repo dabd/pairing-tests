@@ -1,5 +1,7 @@
 package fruitmachine
 
+import cats.data.State
+
 object FM {
 
   sealed trait Colour
@@ -17,6 +19,8 @@ object FM {
                     freePlays: BigDecimal = 0,
                     prizeWon: BigDecimal = 0)
 
+  type FMState = State[(FruitMachine, Player), Unit]
+
   val costOfPlay: BigDecimal = 10
 
   def randomColour: Colour = {
@@ -27,16 +31,21 @@ object FM {
   def randomSlots: Slots =
     (randomColour, randomColour, randomColour, randomColour)
 
-  def play(fruitMachine: FruitMachine,
-           player: Player): (FruitMachine, Player) =
-    fruitMachine.randomSlotGenerator() match {
-      case slots if isJackpot(slots) =>
-        payOut(fruitMachine, player.copy(prizeWon = fruitMachine.prize))
-      case slots if allDifferentColours(slots) =>
-        payOut(fruitMachine, player.copy(prizeWon = fruitMachine.prize / 2))
-      case slots if hasAdjacentColours(slots) =>
-        payOut(fruitMachine, player.copy(prizeWon = 5 * costOfPlay))
-      case _ => payOut(fruitMachine, player.copy(prizeWon = 0))
+  def play: FMState =
+    State {
+      case (fruitMachine, player) =>
+        fruitMachine.randomSlotGenerator() match {
+          case slots if isJackpot(slots) =>
+            (payOut(fruitMachine, player.copy(prizeWon = fruitMachine.prize)),
+             ())
+          case slots if hasDifferentColours(slots) =>
+            (payOut(fruitMachine,
+                    player.copy(prizeWon = fruitMachine.prize / 2)),
+             ())
+          case slots if hasAdjacentColours(slots) =>
+            (payOut(fruitMachine, player.copy(prizeWon = 5 * costOfPlay)), ())
+          case _ => (payOut(fruitMachine, player.copy(prizeWon = 0)), ())
+        }
     }
 
   def payOut(fruitMachine: FruitMachine,
@@ -67,7 +76,7 @@ object FM {
     slotsList.forall(_ == slotsList.head)
   }
 
-  def allDifferentColours(slots: Slots): Boolean = {
+  def hasDifferentColours(slots: Slots): Boolean = {
     val slotsList = tuple4ToList(slots)
     slotsList.distinct == slotsList
   }
